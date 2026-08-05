@@ -1,0 +1,24 @@
+# This package carries its OWN lint config, deliberately.
+#
+# It is a standalone package published on its own, so it should not inherit the
+# lint rules of whatever tree happens to vendor it — and until this file existed
+# it inherited nothing at all: ruff walked up from `src/`, found no config, and
+# silently used DEFAULTS. Relocating the package inside a host tree then made it
+# inherit that host's much stricter config and surfaced 217 findings in a
+# package that had reported "All checks passed" minutes earlier. Neither state
+# was chosen. This one is.
+line-length = 88
+target-version = "py313"
+
+[lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "RET", "PTH", "ARG", "N"]
+# N818 wants an `Error` suffix on exception names. `SendCapExceeded` and
+# `DripError` are this package's PUBLIC API; renaming one for a suffix
+# convention is churn a consumer pays for, and the pair would still be
+# inconsistent. Kept as-is deliberately.
+ignore = ["N818"]
+
+[lint.per-file-ignores]
+# Test doubles must match the signature of what they stand in for, so an unused
+# parameter is the point rather than an oversight.
+"tests/*" = ["ARG001", "ARG002"]
