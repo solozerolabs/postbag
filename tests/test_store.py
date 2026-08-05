@@ -7,8 +7,8 @@ from typing import Any
 
 import pytest
 
-from pennypost import store
-from pennypost.store import Query
+from postbag import store
+from postbag.store import Query
 
 LIST_ID = "00000000-0000-0000-0000-0000000000aa"
 SUB_ID = "00000000-0000-0000-0000-0000000000bb"

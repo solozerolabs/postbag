@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-import pennypost.drip as drip_module
-from pennypost.drip import (
+import postbag.drip as drip_module
+from postbag.drip import (
     DripError,
     DripStep,
     SendCapExceeded,

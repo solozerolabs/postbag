@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from pennypost.cli import main
+from postbag.cli import main
 
 
 def _write_step(

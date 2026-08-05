@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import pytest
 
-from pennypost.tokens import (
+from postbag.tokens import (
     PURPOSE_LIST_UNSUBSCRIBE,
     PURPOSE_UNSUBSCRIBE,
     InvalidTokenError,

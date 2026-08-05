@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from pennypost.render import markdown_to_html, render_changelog_draft, render_email
+from postbag.render import markdown_to_html, render_changelog_draft, render_email
 
 FOOTER = (
     "Solo Zero Labs, 1 Example St, Springfield. You get this because you signed up."
@@ -280,7 +280,7 @@ def test_both_parts_share_one_segmentation() -> None:
     Mutation: give the text renderer its own segmentation (e.g. split on `\n`
     only, not `_segment`) -> a `\r\r` or wrapped case reds.
     """
-    from pennypost.render import _segment, _to_text, markdown_to_html
+    from postbag.render import _segment, _to_text, markdown_to_html
 
     cases = [
         "**bold** in a line",
@@ -316,7 +316,7 @@ def test_bullet_runs_match_the_pre_unification_renderer() -> None:
 
     Mutation: emit one bullet block per item instead of a run -> this reds.
     """
-    from pennypost.render import _to_text
+    from postbag.render import _to_text
 
     # tight: one list, both parts
     assert markdown_to_html("- a\n- b") == "<ul><li>a</li><li>b</li></ul>"

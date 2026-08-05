@@ -8,7 +8,7 @@ from typing import Any
 import httpx
 import pytest
 
-from pennypost.transport_resend import (
+from postbag.transport_resend import (
     BATCH_MAX,
     Message,
     SendOutcome,

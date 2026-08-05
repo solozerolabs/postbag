@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from pennypost.archive import export, sent_keys
+from postbag.archive import export, sent_keys
 
 
 def _messages(tmp_path: Path) -> Path:

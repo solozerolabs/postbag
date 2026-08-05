@@ -1,7 +1,8 @@
-"""pennypost — a newsletter engine you host yourself, shaped as a library.
+"""postbag — a newsletter engine you host yourself, shaped as a library.
 
-Named after the 1840 Uniform Penny Post, which made mail cheap and universal by
-charging the sender a flat penny instead of the recipient a variable fee.
+Named for the carrier's postbag — the one sack that holds a whole round's
+letters. That is what this engine is: the single place a list's outgoing mail
+and the record of what already went out both live.
 
 The shape, in one paragraph: you own the Postgres, an email service provider
 owns the SMTP, and this package owns the parts in between — lists, subscribers,
@@ -14,7 +15,7 @@ you CREATE TABLE text; your application decides when and in which transaction
 any of it runs.
 """
 
-from pennypost.tokens import (
+from postbag.tokens import (
     PURPOSE_UNSUBSCRIBE,
     InvalidTokenError,
     mint_token,

@@ -19,9 +19,9 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from pennypost.archive import export
-from pennypost.drip import DripError, load_step
-from pennypost.render import render_changelog_draft
+from postbag.archive import export
+from postbag.drip import DripError, load_step
+from postbag.render import render_changelog_draft
 
 
 @dataclass(frozen=True, slots=True)
@@ -129,7 +129,7 @@ def _validate_drip(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="pennypost", description=__doc__.splitlines()[0]
+        prog="postbag", description=__doc__.splitlines()[0]
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 

@@ -109,7 +109,7 @@ def test_the_engine_imports_no_database_driver() -> None:
         "markdown",
         "jinja2",
     )
-    # Anchored at the start of a statement so `from pennypost.render import
+    # Anchored at the start of a statement so `from postbag.render import
     # markdown_to_html` is not mistaken for a markdown dependency.
     pattern = re.compile(rf"^\s*(?:import|from)\s+({'|'.join(banned)})\b", re.MULTILINE)
     offenders = [

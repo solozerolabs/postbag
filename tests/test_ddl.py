@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from pennypost import ddl, store
+from postbag import ddl, store
 
 
 def test_statements_are_emitted_for_all_three_tables() -> None:

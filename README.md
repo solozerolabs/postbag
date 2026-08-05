@@ -1,12 +1,13 @@
-# pennypost
+# postbag
 
 **A newsletter engine you host yourself, shaped as a library.** You own the
-Postgres. An email service provider owns the SMTP. pennypost owns the awkward
+Postgres. An email service provider owns the SMTP. postbag owns the awkward
 part in between — subscribers, suppression, an idempotent send log, drip
 sequences, compliant headers, and a static archive.
 
-Named after the 1840 Uniform Penny Post, which made mail cheap and universal by
-charging the sender a flat penny instead of the recipient a variable fee.
+Named for the carrier's postbag — the one sack that holds a whole round's
+letters. That is what this engine is: the single place a list's outgoing mail
+and the record of what already went out both live.
 
 > **Stage: new.** Version 0.1.0. Built to run its first production list, and that is
 > the whole of its track record. There are no users to quote and no scale to
@@ -28,8 +29,8 @@ behaviour.
 
 - **A library, not a service.** No web UI, no daemon, no container to run. You
   import it and call it from whatever already runs your background jobs.
-- **No database driver.** `pennypost.ddl` hands you `CREATE TABLE` text;
-  `pennypost.store` builds parameterized SQL. Your application decides when, and
+- **No database driver.** `postbag.ddl` hands you `CREATE TABLE` text;
+  `postbag.store` builds parameterized SQL. Your application decides when, and
   in which transaction, any of it executes. The engine cannot open a connection
   you did not give it.
 - **Idempotency is a UNIQUE index**, not application logic. `newsletter_sends`
@@ -58,13 +59,13 @@ behaviour.
 
 ## Install
 
-Not on PyPI — and deliberately not `pip install pennypost`, which is a
+Not on PyPI — and deliberately not `pip install postbag`, which is a
 DIFFERENT, unrelated package that already owns the name there. Install from
 source:
 
 ```sh
-git clone https://github.com/solozerolabs/pennypost
-uv add --editable ./pennypost   # or: pip install -e ./pennypost
+git clone https://github.com/solozerolabs/postbag
+uv add --editable ./postbag   # or: pip install -e ./postbag
 ```
 
 ## Quickstart
@@ -72,7 +73,7 @@ uv add --editable ./pennypost   # or: pip install -e ./pennypost
 Create the tables — in your own migration, with the text frozen into it:
 
 ```python
-from pennypost import ddl
+from postbag import ddl
 
 for statement in ddl.statements("app"):   # your schema name
     print(statement)
@@ -81,7 +82,7 @@ for statement in ddl.statements("app"):   # your schema name
 Build the SQL, run it with your own driver:
 
 ```python
-from pennypost import store
+from postbag import store
 
 query = store.upsert_subscriber("app", list_id=LIST_ID, email="reader@example.com", source="signup")
 await my_connection.execute(query.sql, query.params)
@@ -90,9 +91,9 @@ await my_connection.execute(query.sql, query.params)
 Work out who is due, then send:
 
 ```python
-from pennypost.drip import load_sequence, plan_tick
-from pennypost.render import render_email
-from pennypost.transport_resend import Message, send_batch
+from postbag.drip import load_sequence, plan_tick
+from postbag.render import render_email
+from postbag.transport_resend import Message, send_batch
 
 sequence = load_sequence(Path("content/drip"))
 due = plan_tick(subscribers, sends, sequence, now)        # raises SendCapExceeded on a runaway
@@ -144,9 +145,9 @@ constraint, so a renamed key is a new message that re-mails the whole list.
 ## Command line
 
 ```sh
-pennypost validate-drip content/drip                     # pre-commit gate; exit 1 on any problem
-pennypost render-weekly --entries changelog.json --since 2026-08-01 --product Widgets
-pennypost export-archive --sends sends.json --messages-dir content/drip --out-dir site/archive
+postbag validate-drip content/drip                     # pre-commit gate; exit 1 on any problem
+postbag render-weekly --entries changelog.json --since 2026-08-01 --product Widgets
+postbag export-archive --sends sends.json --messages-dir content/drip --out-dir site/archive
 ```
 
 There are deliberately no database subcommands and nothing that sends. The host

@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING, Any, Final
 
 import httpx
 
-from pennypost.store import normalize_email
+from postbag.store import normalize_email
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
@@ -138,7 +138,7 @@ async def send_batch(
     """
     sendable, dropped = drop_suppressed(messages, suppressed)
     if dropped:
-        logger.warning("pennypost_send_suppressed_dropped count=%d", len(dropped))
+        logger.warning("postbag_send_suppressed_dropped count=%d", len(dropped))
     if not sendable:
         # Nothing to do is a success, not a failure — and notably NOT an
         # ambiguous outcome: no request was made, so nothing is in flight.
@@ -159,18 +159,18 @@ async def send_batch(
     except httpx.RequestError:
         # Timeout, connection reset, DNS. The request may have been fully
         # received and processed — UNKNOWN, never a refusal.
-        logger.warning("pennypost_send_ambiguous reason=transport")
+        logger.warning("postbag_send_ambiguous reason=transport")
         return SendOutcome.UNKNOWN
 
     if response.status_code >= _SERVER_ERROR:
         logger.warning(
-            "pennypost_send_ambiguous reason=server_error status=%d",
+            "postbag_send_ambiguous reason=server_error status=%d",
             response.status_code,
         )
         return SendOutcome.UNKNOWN
     if response.is_error:
         # A 4xx is Resend telling us it did NOT accept this. Safe to release.
-        logger.error("pennypost_send_rejected status=%d", response.status_code)
+        logger.error("postbag_send_rejected status=%d", response.status_code)
         return SendOutcome.REJECTED
     return SendOutcome.SENT
 

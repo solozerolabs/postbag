@@ -18,7 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Protocol
 
-from pennypost.ddl import validate_schema_name
+from postbag.ddl import validate_schema_name
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Sequence

@@ -17,8 +17,8 @@ import html
 import re
 from typing import TYPE_CHECKING, Any, Final
 
-from pennypost.drip import parse_front_matter
-from pennypost.render import markdown_to_html
+from postbag.drip import parse_front_matter
+from postbag.render import markdown_to_html
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
