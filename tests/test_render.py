@@ -222,6 +222,22 @@ def test_bold_spanning_a_hard_wrap_still_renders() -> None:
     assert "**" not in html_out
 
 
+def test_punctuation_after_a_hard_wrapped_emphasis_close_gets_no_space() -> None:
+    """A wrap boundary right after `**` must not inject a space before punctuation.
+
+    The closing `**` can land at the end of a wrapped source line with the
+    next line starting with the sentence's own punctuation (`. Really.`).
+    Joining wrapped lines with a blind space then put a space in front of
+    that punctuation, which no reader's prose ever does.
+
+    Mutation: join wrapped lines with an unconditional " ".join -> this reds.
+    """
+    html_out = markdown_to_html("This is **bold**\n. Really.")
+
+    assert "<strong>bold</strong>. Really." in html_out
+    assert "</strong> ." not in html_out
+
+
 def test_the_text_part_shows_no_markdown_markers() -> None:
     """A plain-text reader must not see `**` — the HTML fix, one alternative over.
 

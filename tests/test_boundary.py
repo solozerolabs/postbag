@@ -30,6 +30,11 @@ PACKAGE_ROOT: Final = Path(__file__).resolve().parents[1]
 # Both needles are split so this file does not trip its own scan.
 _NEEDLES: Final = ("synd" + "ai", "wait" + "list")
 
+# The two sandbox-harness scratch dirs below are named with the host needle,
+# so they are built from the same split fragments as `_NEEDLES` rather than
+# spelled out — this file must not trip its own scan.
+_HOST_PREFIX: Final = "." + "synd" + "ai"
+
 _SKIP_DIRS: Final = frozenset(
     {
         ".venv",
@@ -40,6 +45,8 @@ _SKIP_DIRS: Final = frozenset(
         ".ruff_cache",
         "dist",
         "build",
+        f"{_HOST_PREFIX}-validation",
+        f"{_HOST_PREFIX}-run-state",
     }
 )
 _SKIP_SUFFIXES: Final = frozenset(

@@ -39,6 +39,10 @@ _URL_RE: Final = re.compile(r"(https?://[^\s<)\]]+)")
 # newsletter almost always means "bold line".
 _HEADING_RE: Final = re.compile(r"^\*\*(.+)\*\*$")
 
+# A wrapped line that starts with punctuation attaches directly to the prior
+# line; only a real word wrap gets a joining space.
+_LEADING_PUNCT_RE: Final = re.compile(r"^[.,!?;:)\]}]")
+
 _HEADINGS: Final = (("new", "New"), ("improved", "Improved"), ("fixed", "Fixed"))
 
 
@@ -111,7 +115,10 @@ def _segment(body: str) -> list[tuple[str, object]]:
 
     def flush_para() -> None:
         if para:
-            blocks.append(("paragraph", " ".join(para)))
+            joined = para[0]
+            for line in para[1:]:
+                joined += line if _LEADING_PUNCT_RE.match(line) else f" {line}"
+            blocks.append(("paragraph", joined))
             para.clear()
 
     def flush_bullets() -> None:
@@ -204,9 +211,8 @@ def _to_text(body: str) -> str:
     blocks: list[str] = []
     for kind, content in _segment(body):
         if kind == "bullet":
-            blocks.append(
-                "\n".join(f"- {_EMPHASIS_RE.sub(r'\1', item)}" for item in content)
-            )
+            stripped_items = [_EMPHASIS_RE.sub(r"\1", item) for item in content]
+            blocks.append("\n".join(f"- {item}" for item in stripped_items))
         else:
             blocks.append(_EMPHASIS_RE.sub(r"\1", content))
     return "\n\n".join(blocks)
