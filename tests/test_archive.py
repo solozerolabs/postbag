@@ -88,6 +88,23 @@ def test_a_message_key_that_is_unsafe_as_a_filename_is_refused(tmp_path: Path) -
         )
 
 
+def test_two_files_resolving_to_the_same_message_key_are_refused(
+    tmp_path: Path,
+) -> None:
+    """Reds if `_load_messages` lets a later file silently overwrite an earlier one."""
+    directory = _messages(tmp_path)
+    (directory / "02-what-it-is-again.md").write_text(
+        "---\nkey: what-it-is\nday: 3\nsubject: Duplicate\napproved: true\n---\n"
+        "Different copy.\n",
+        encoding="utf-8",
+    )
+    sends = [
+        {"message_key": "what-it-is", "sent_at": "2026-08-01T00:00:00Z"},
+    ]
+    with pytest.raises(ValueError, match="what-it-is"):
+        export(sends, directory, tmp_path / "out")
+
+
 def test_sent_keys_are_distinct_and_sorted() -> None:
     sends = [
         {"message_key": "b", "sent_at": "1"},

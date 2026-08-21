@@ -56,10 +56,17 @@ def _load_messages(messages_dir: Path) -> dict[str, tuple[str, str]]:
     `drip.load_step` remains strict, because that path decides what to SEND.
     """
     messages: dict[str, tuple[str, str]] = {}
+    sources: dict[str, Path] = {}
     for path in sorted(messages_dir.glob("*.md")):
         meta, body = parse_front_matter(path.read_text(encoding="utf-8"))
         match = _FILENAME_RE.match(path.stem)
         key = meta.get("key") or (match.group(1) if match else path.stem)
+        if key in sources:
+            raise ValueError(
+                f"message key {key!r} is used by both {sources[key].name!r} "
+                f"and {path.name!r}"
+            )
+        sources[key] = path
         messages[key] = (meta.get("subject", key), body)
     return messages
 
