@@ -43,6 +43,34 @@ def test_bare_urls_become_links_in_html_and_stay_bare_in_text() -> None:
     assert "<a href" not in text_body
 
 
+def test_a_bare_url_followed_by_a_period_keeps_the_period_outside_the_link() -> None:
+    """The sentence's full stop is not part of the URL and must not join the href.
+
+    `_URL_RE` alone is greedy past `.`, so without the trailing-punctuation
+    strip the period lands inside both the href and the visible anchor text.
+    """
+    html_out = markdown_to_html("Read https://example.test/post.")
+
+    assert (
+        '<a href="https://example.test/post">https://example.test/post</a>.'
+        in html_out
+    )
+    assert 'href="https://example.test/post."' not in html_out
+
+
+def test_a_bare_url_followed_by_a_closing_paren_keeps_the_paren_outside_the_link() -> (
+    None
+):
+    """A URL parenthetically noted, e.g. `(see https://example.test/post)`."""
+    html_out = markdown_to_html("See the post (https://example.test/post) for more.")
+
+    assert (
+        '<a href="https://example.test/post">https://example.test/post</a>)'
+        in html_out
+    )
+    assert 'href="https://example.test/post)"' not in html_out
+
+
 @pytest.mark.parametrize(
     "source",
     [

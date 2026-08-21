@@ -34,6 +34,12 @@ if TYPE_CHECKING:
 # which is exactly what an href attribute wants.
 _URL_RE: Final = re.compile(r"(https?://[^\s<)\]]+)")
 
+# Sentence-ending punctuation trailing a matched URL: not part of the link,
+# just the author's sentence continuing. Stripped off the END of a match only,
+# so a `?` or `:` that is part of the URL itself (a query string, a port) is
+# untouched — only a run of these characters at the very tail is punctuation.
+_TRAILING_PUNCTUATION_RE: Final = re.compile(r"[.,;:!?]+$")
+
 # A whole line wrapped in `**`: the only heading form. `#` is not supported
 # because mail clients render nothing special for it and copy that uses it in a
 # newsletter almost always means "bold line".
@@ -72,8 +78,22 @@ def _emphasis(escaped: str) -> str:
 
 
 def _linkify(escaped: str) -> str:
-    """Wrap bare URLs in anchors. Input is already escaped; output is markup."""
-    return _URL_RE.sub(r'<a href="\1">\1</a>', escaped)
+    """Wrap bare URLs in anchors. Input is already escaped; output is markup.
+
+    A trailing period, comma, semicolon, colon, exclamation mark, or question
+    mark is sentence punctuation, not part of the link, and is moved outside
+    the anchor rather than swallowed into the href and visible text.
+    """
+
+    def _replace(match: re.Match[str]) -> str:
+        url = match.group(1)
+        trailing = _TRAILING_PUNCTUATION_RE.search(url)
+        punctuation = trailing.group(0) if trailing else ""
+        if punctuation:
+            url = url[: -len(punctuation)]
+        return f'<a href="{url}">{url}</a>{punctuation}'
+
+    return _URL_RE.sub(_replace, escaped)
 
 
 def _inline(escaped: str) -> str:
@@ -205,7 +225,7 @@ def _to_text(body: str) -> str:
     for kind, content in _segment(body):
         if kind == "bullet":
             blocks.append(
-                "\n".join(f"- {_EMPHASIS_RE.sub(r'\1', item)}" for item in content)
+                "\n".join("- " + _EMPHASIS_RE.sub(r"\1", item) for item in content)
             )
         else:
             blocks.append(_EMPHASIS_RE.sub(r"\1", content))
