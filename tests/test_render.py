@@ -222,6 +222,25 @@ def test_bold_spanning_a_hard_wrap_still_renders() -> None:
     assert "**" not in html_out
 
 
+def test_punctuation_after_a_wrapped_closed_emphasis_span_has_no_extra_space() -> None:
+    """A bold span closed at the end of a wrapped line, with trailing punctuation
+    carried to the next source line, must not gain a space before that
+    punctuation once the lines are joined into one paragraph.
+
+    Mutation: join wrapped paragraph lines with a plain `" ".join` -> this reds,
+    rendering `</strong> .` instead of `</strong>.`.
+    """
+    html_out = markdown_to_html("Here is the **new feature**\n. It rocks.")
+
+    assert "<strong>new feature</strong>. It rocks." in html_out
+    assert "</strong> ." not in html_out
+
+    _, text_body = render_email(
+        "Here is the **new feature**\n. It rocks.", footer=FOOTER, unsubscribe_url=UNSUB
+    )
+    assert "new feature. It rocks." in text_body
+
+
 def test_the_text_part_shows_no_markdown_markers() -> None:
     """A plain-text reader must not see `**` — the HTML fix, one alternative over.
 

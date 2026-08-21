@@ -41,6 +41,12 @@ _HEADING_RE: Final = re.compile(r"^\*\*(.+)\*\*$")
 
 _HEADINGS: Final = (("new", "New"), ("improved", "Improved"), ("fixed", "Fixed"))
 
+# A continuation line that opens with punctuation: the wrap-join must not put a
+# space before it, or a `**bold**` closed at the end of one line with trailing
+# punctuation carried to the next (e.g. "**new feature**\n. It rocks.") renders
+# as "</strong> ." instead of "</strong>.".
+_LEADING_PUNCT_RE: Final = re.compile(r"^[.,!?;:)\]]")
+
 
 class ChangelogEntry(Protocol):
     """Structural type, so the engine never imports the host's changelog module."""
@@ -111,7 +117,10 @@ def _segment(body: str) -> list[tuple[str, object]]:
 
     def flush_para() -> None:
         if para:
-            blocks.append(("paragraph", " ".join(para)))
+            joined = para[0]
+            for line in para[1:]:
+                joined += line if _LEADING_PUNCT_RE.match(line) else f" {line}"
+            blocks.append(("paragraph", joined))
             para.clear()
 
     def flush_bullets() -> None:
@@ -204,9 +213,8 @@ def _to_text(body: str) -> str:
     blocks: list[str] = []
     for kind, content in _segment(body):
         if kind == "bullet":
-            blocks.append(
-                "\n".join(f"- {_EMPHASIS_RE.sub(r'\1', item)}" for item in content)
-            )
+            stripped_items = (_EMPHASIS_RE.sub(r"\1", item) for item in content)
+            blocks.append("\n".join(f"- {item}" for item in stripped_items))
         else:
             blocks.append(_EMPHASIS_RE.sub(r"\1", content))
     return "\n\n".join(blocks)
