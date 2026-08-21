@@ -106,6 +106,13 @@ def verify_token(token: str, *, purpose: str, secret: str) -> UUID:
     except ValueError as exc:
         raise InvalidTokenError("malformed payload") from exc
 
+    # A correctly signed payload can still decode to something other than a
+    # JSON object (e.g. an array or a bare number) if it was minted by code
+    # other than `mint_token`. Without this check, `claims.get` below would
+    # raise AttributeError instead of the uniform InvalidTokenError.
+    if not isinstance(claims, dict):
+        raise InvalidTokenError("malformed payload")
+
     if claims.get("v") != TOKEN_VERSION:
         raise InvalidTokenError("unsupported version")
     # Checked AFTER the signature, so an attacker cannot probe purposes without

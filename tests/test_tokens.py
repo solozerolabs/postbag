@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from uuid import uuid4
 
 import pytest
@@ -10,6 +11,8 @@ from postbag.tokens import (
     PURPOSE_LIST_UNSUBSCRIBE,
     PURPOSE_UNSUBSCRIBE,
     InvalidTokenError,
+    _b64url_encode,
+    _sign,
     mint_token,
     verify_token,
 )
@@ -81,6 +84,21 @@ def test_malformed_token_is_refused_not_crashed() -> None:
     for bad in ("", "no-dot", "!!!.???", "."):
         with pytest.raises(InvalidTokenError):
             verify_token(bad, purpose=PURPOSE_UNSUBSCRIBE, secret=SECRET)
+
+
+def test_correctly_signed_non_object_payload_is_refused_not_crashed() -> None:
+    """Reds if `verify_token` calls `claims.get` before checking its shape.
+
+    A JSON array signs and decodes fine, but has no `.get` method: without the
+    `isinstance(claims, dict)` guard this raises `AttributeError` instead of
+    the uniform `InvalidTokenError`, leaking an internal detail across the
+    public boundary.
+    """
+    payload = json.dumps(["not", "an", "object"], separators=(",", ":")).encode()
+    token = f"{_b64url_encode(payload)}.{_b64url_encode(_sign(payload, SECRET))}"
+
+    with pytest.raises(InvalidTokenError):
+        verify_token(token, purpose=PURPOSE_UNSUBSCRIBE, secret=SECRET)
 
 
 def test_a_token_for_one_purpose_never_verifies_as_the_other() -> None:
