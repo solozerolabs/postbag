@@ -259,6 +259,23 @@ def test_the_text_part_strips_bold_that_crosses_a_hard_wrap() -> None:
     assert "bold that spans the hard wrap" in body_part  # markers gone, lines joined
 
 
+def test_punctuation_after_a_wrapped_emphasis_span_gets_no_extra_space() -> None:
+    """A hard wrap can land right after `**emphasis**`, putting the punctuation
+    that follows it at the start of the next source line. Joining lines with a
+    bare space would inject a space the author never wrote.
+
+    Mutation: revert `flush_para` to `" ".join(para)` -> this reds.
+    """
+    source = "This is bold **text**\n. Next sentence.\n"
+    html_out = markdown_to_html(source)
+    _, text_body = render_email(source, footer=FOOTER, unsubscribe_url=UNSUB)
+
+    assert "<strong>text</strong>. Next sentence." in html_out
+    assert "<strong>text</strong> ." not in html_out
+    assert "bold text. Next sentence." in text_body
+    assert "text ." not in text_body
+
+
 def test_both_parts_share_one_segmentation() -> None:
     """The two MIME parts derive marker survival from ONE `_segment` + ONE regex.
 

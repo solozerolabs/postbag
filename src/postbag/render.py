@@ -39,6 +39,12 @@ _URL_RE: Final = re.compile(r"(https?://[^\s<)\]]+)")
 # newsletter almost always means "bold line".
 _HEADING_RE: Final = re.compile(r"^\*\*(.+)\*\*$")
 
+# Punctuation that hugs the token before it. A hard wrap can land right after a
+# closed `**emphasis**` span, putting this punctuation at the start of the next
+# source line; joining lines with a bare space would then inject a space the
+# author never wrote, e.g. "text**" + " " + ". Next" -> "text** . Next".
+_LEADING_PUNCTUATION_RE: Final = re.compile(r"^[.,!?;:)\]]")
+
 _HEADINGS: Final = (("new", "New"), ("improved", "Improved"), ("fixed", "Fixed"))
 
 
@@ -111,7 +117,11 @@ def _segment(body: str) -> list[tuple[str, object]]:
 
     def flush_para() -> None:
         if para:
-            blocks.append(("paragraph", " ".join(para)))
+            joined = para[0]
+            for line in para[1:]:
+                sep = "" if _LEADING_PUNCTUATION_RE.match(line) else " "
+                joined += sep + line
+            blocks.append(("paragraph", joined))
             para.clear()
 
     def flush_bullets() -> None:
